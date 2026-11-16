@@ -33,6 +33,8 @@ Grab the latest release here: **[Releases](https://github.com/1sun12/timeline-ap
 
 ## Installing
 
+1. Go here: **[Timeline v0.1.0 release](https://github.com/1sun12/timeline-app/releases/tag/v0.1.0)** and download the file for your OS (see [Download](#download))
+
 The app isn't signed with a paid Apple or Microsoft certificate, so your OS will warn you the first time. That's expected; here's how to get past it on each one.
 
 ### Mac
