@@ -1,0 +1,270 @@
+:root {
+  --font-ui: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces Variable", "Iowan Old Style", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Cream */
+  --bg: #f3ecdd;
+  --glass: rgba(250, 245, 234, 0.8);
+  --glass-strong: rgba(251, 247, 238, 0.94);
+  --glass-edge: rgba(74, 55, 24, 0.1);
+  --hairline: rgba(74, 55, 24, 0.11);
+  --field: rgba(255, 255, 255, 0.55);
+  --text: #2a2216;
+  --text-2: #6f624d;
+  --text-3: #a39579;
+  --axis: rgba(64, 48, 24, 0.42);
+  --stem: rgba(56, 52, 48, 0.4);
+  --shadow: 0 1px 2px rgba(60, 45, 20, 0.06);
+  --shadow-lift: 0 2px 8px -2px rgba(60, 45, 20, 0.14);
+  --grain-opacity: 0.05;
+
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --accent-ink: color-mix(in srgb, var(--accent) 70%, var(--text));
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  /* Matte black */
+  --bg: #111110;
+  --glass: rgba(26, 26, 25, 0.82);
+  --glass-strong: rgba(30, 30, 29, 0.96);
+  --glass-edge: rgba(255, 255, 255, 0.07);
+  --hairline: rgba(255, 255, 255, 0.075);
+  --field: rgba(255, 255, 255, 0.04);
+  --text: #ede7dc;
+  --text-2: #a69e90;
+  --text-3: #6f685d;
+  --axis: rgba(237, 226, 208, 0.3);
+  --stem: rgba(150, 146, 140, 0.4);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 2px 10px -2px rgba(0, 0, 0, 0.5);
+  --grain-opacity: 0.035;
+  --accent-ink: color-mix(in srgb, var(--accent) 80%, white);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font: 400 13.5px/1.5 var(--font-ui);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s;
+}
+
+/* Paper grain, very faint. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow);
+}
+
+.glass-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow-lift);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Shared controls */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.btn:hover {
+  background: var(--accent-soft);
+}
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn.primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, black);
+}
+.btn.danger:hover {
+  background: rgba(200, 60, 40, 0.12);
+  color: #c4442e;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-2);
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.field {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--field);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.label {
+  font: 600 10.5px var(--font-ui);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--field);
+  border: 1px solid var(--hairline);
+}
+.segmented button {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.segmented button.on {
+  background: var(--glass-strong);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+kbd {
+  font: 500 11px var(--font-ui);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+  color: var(--text-2);
+}
+
+/* Rendered markdown */
+.prose {
+  font: 400 15px/1.65 var(--font-serif);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.2em 0 0.4em;
+}
+.prose h1 { font-size: 1.5em; }
+.prose h2 { font-size: 1.25em; }
+.prose h3 { font-size: 1.08em; }
+.prose p { margin: 0 0 0.8em; }
+.prose a { color: var(--accent-ink); }
+.prose blockquote {
+  margin: 0 0 0.8em;
+  padding-left: 14px;
+  border-left: 3px solid var(--accent-soft);
+  color: var(--text-2);
+  font-style: italic;
+}
+.prose code {
+  font: 0.85em var(--font-mono);
+  background: var(--field);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 1px 4px;
+}
+.prose pre {
+  background: var(--field);
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+.prose pre code { border: 0; padding: 0; background: none; }
+.prose img { max-width: 100%; border-radius: 8px; }
+.prose hr { border: 0; border-top: 1px solid var(--hairline); margin: 1.4em 0; }
+.prose .wikilink {
+  color: var(--accent-ink);
+  text-decoration: none;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 0 3px;
+  cursor: pointer;
+}
+.prose .wikilink.missing {
+  background: none;
+  border-bottom: 1px dashed var(--text-3);
+  color: var(--text-2);
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
