@@ -9,6 +9,9 @@ set -eux
 # patchelf, strace and xvfb are quick-sharun's: it runs the app briefly to find dlopened libraries.
 pacman -Syu --noconfirm --needed base-devel git wget rust nodejs npm webkit2gtk-4.1 librsvg \
 	desktop-file-utils patchelf strace xorg-server-xvfb
+# Slimmed-down mesa and friends: stock mesa drags in libLLVM (+100 MiB) and quick-sharun refuses it.
+wget -qO- https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/main/useful-tools/get-debloated-pkgs.sh \
+	| sh -s -- --add-common --prefer-nano
 
 npm ci
 npx tauri build --no-bundle
