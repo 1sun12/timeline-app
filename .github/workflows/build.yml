@@ -104,6 +104,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - run: sh scripts/build-appimage.sh
+        env:
+          # The debloated-package helper queries the GitHub API; anonymous calls hit the shared rate limit.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
