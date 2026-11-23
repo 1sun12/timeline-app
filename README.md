@@ -27,13 +27,13 @@ Grab the latest release here: **[Releases](https://github.com/1sun12/timeline-ap
 
 | OS | File |
 |---|---|
-| Mac (Apple Silicon and Intel) | `Timeline_0.1.0_universal.dmg` |
-| Windows 10 / 11 | `Timeline_0.1.0_x64-setup.exe` (or the `.msi`) |
-| Linux | `Timeline_0.1.0_amd64.AppImage`, `.deb` or `.rpm` |
+| Mac (Apple Silicon and Intel) | `Timeline_0.1.1_universal.dmg` |
+| Windows 10 / 11 | `Timeline_0.1.1_x64-setup.exe` (or the `.msi`) |
+| Linux | `Timeline_0.1.1_amd64.AppImage`, `.deb` or `.rpm` |
 
 ## Installing
 
-1. Go here: **[Timeline v0.1.0 release](https://github.com/1sun12/timeline-app/releases/tag/v0.1.0)** and download the file for your OS (see [Download](#download))
+1. Go here: **[Timeline v0.1.1 release](https://github.com/1sun12/timeline-app/releases/tag/v0.1.1)** and download the file for your OS (see [Download](#download))
 
 The app isn't signed with a paid Apple or Microsoft certificate, so your OS will warn you the first time. That's expected; here's how to get past it on each one.
 
@@ -50,7 +50,7 @@ xattr -cr /Applications/Timeline.app
 
 ### Windows
 
-1. Run `Timeline_0.1.0_x64-setup.exe`
+1. Run `Timeline_0.1.1_x64-setup.exe`
 2. If you get **"Windows protected your PC"** (SmartScreen), click **More info → Run anyway**
 3. Timeline shows up in the Start menu when it's done
 
@@ -62,8 +62,8 @@ xattr -cr /Applications/Timeline.app
 AppImage (works on most distros, nothing to install):
 
 ```bash
-chmod +x Timeline_0.1.0_amd64.AppImage
-./Timeline_0.1.0_amd64.AppImage
+chmod +x Timeline_0.1.1_amd64.AppImage
+./Timeline_0.1.1_amd64.AppImage
 ```
 
 * If it won't start on Ubuntu 22.04 or newer, it needs FUSE 2: `sudo apt install libfuse2` (on 24.04 the package is `libfuse2t64`)
@@ -71,13 +71,13 @@ chmod +x Timeline_0.1.0_amd64.AppImage
 Debian / Ubuntu / Pop!_OS:
 
 ```bash
-sudo apt install ./Timeline_0.1.0_amd64.deb
+sudo apt install ./Timeline_0.1.1_amd64.deb
 ```
 
 Fedora / RHEL:
 
 ```bash
-sudo dnf install ./Timeline-0.1.0-1.x86_64.rpm
+sudo dnf install ./Timeline-0.1.1-1.x86_64.rpm
 ```
 
 ### Blocked by a firewall or antivirus?
@@ -215,9 +215,9 @@ On a Mac, use `Cmd` instead of `Ctrl`.
 
 **Where is my data stored?**
 
-* Mac: `~/Library/Application Support/com.1sun12.timeline-app/`
-* Windows: `%APPDATA%\com.1sun12.timeline-app\`
-* Linux: `~/.local/share/com.1sun12.timeline-app/`
+* Mac: `~/Library/Application Support/com.timeline-app.dev/`
+* Windows: `%APPDATA%\com.timeline-app.dev\`
+* Linux: `~/.local/share/com.timeline-app.dev/`
 * It's a single SQLite file, `timeline.db`. Back that up and you've backed up everything
 
 **Do I need the internet?**
