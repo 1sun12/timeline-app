@@ -215,9 +215,9 @@ On a Mac, use `Cmd` instead of `Ctrl`.
 
 **Where is my data stored?**
 
-* Mac: `~/Library/Application Support/com.timeline-app.dev/`
-* Windows: `%APPDATA%\com.timeline-app.dev\`
-* Linux: `~/.local/share/com.timeline-app.dev/`
+* Mac: `~/Library/Application Support/com.timeline-app-dev/`
+* Windows: `%APPDATA%\com.timeline-app-dev\`
+* Linux: `~/.local/share/com.timeline-app-dev/`
 * It's a single SQLite file, `timeline.db`. Back that up and you've backed up everything
 
 **Do I need the internet?**
