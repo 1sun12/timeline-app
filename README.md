@@ -27,13 +27,15 @@ Grab the latest release here: **[Releases](https://github.com/1sun12/timeline-ap
 
 | OS | File |
 |---|---|
-| Mac (Apple Silicon and Intel) | `Timeline_0.1.1_universal.dmg` |
-| Windows 10 / 11 | `Timeline_0.1.1_x64-setup.exe` (or the `.msi`) |
-| Linux | `Timeline_0.1.1_amd64.AppImage`, `.deb` or `.rpm` |
+| Mac (Apple Silicon and Intel) | `Timeline_0.1.2_universal.dmg` |
+| Windows 10 / 11 | `Timeline_0.1.2_x64-setup.exe` (or the `.msi`) |
+| Linux | `Timeline_0.1.2_amd64.AppImage`, `.deb` or `.rpm` |
+
+Timeline is also listed on AppImageHub: **[appimage.github.io/Timeline](https://appimage.github.io/Timeline/)**
 
 ## Installing
 
-1. Go here: **[Timeline v0.1.1 release](https://github.com/1sun12/timeline-app/releases/tag/v0.1.1)** and download the file for your OS (see [Download](#download))
+1. Go here: **[Timeline v0.1.2 release](https://github.com/1sun12/timeline-app/releases/tag/v0.1.2)** and download the file for your OS (see [Download](#download))
 
 The app isn't signed with a paid Apple or Microsoft certificate, so your OS will warn you the first time. That's expected; here's how to get past it on each one.
 
@@ -50,7 +52,7 @@ xattr -cr /Applications/Timeline.app
 
 ### Windows
 
-1. Run `Timeline_0.1.1_x64-setup.exe`
+1. Run `Timeline_0.1.2_x64-setup.exe`
 2. If you get **"Windows protected your PC"** (SmartScreen), click **More info → Run anyway**
 3. Timeline shows up in the Start menu when it's done
 
@@ -62,22 +64,31 @@ xattr -cr /Applications/Timeline.app
 AppImage (works on most distros, nothing to install):
 
 ```bash
-chmod +x Timeline_0.1.1_amd64.AppImage
-./Timeline_0.1.1_amd64.AppImage
+chmod +x Timeline_0.1.2_amd64.AppImage
+./Timeline_0.1.2_amd64.AppImage
 ```
 
-* If it won't start on Ubuntu 22.04 or newer, it needs FUSE 2: `sudo apt install libfuse2` (on 24.04 the package is `libfuse2t64`)
+* It's self-contained: it ships its own C library, so it doesn't depend on your distro's glibc version, and it doesn't need `libfuse2`
+* If it says FUSE isn't available (some containers and locked-down systems), run it without mounting: `./Timeline_0.1.2_amd64.AppImage --appimage-extract-and-run`
+* Updating: the AppImage carries its own update information, so [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate) (or `appimageupdatetool Timeline_*.AppImage`) downloads only what changed in the newest release
+* Optional sandbox: run it through [Firejail](https://firejail.wordpress.com/) with `firejail --appimage ./Timeline_0.1.2_amd64.AppImage`
+
+Verify your download (optional): release AppImages are GPG-signed with the key in [`docs/appimage-signing-key.asc`](docs/appimage-signing-key.asc), fingerprint `BE3C 957E FD36 1B62 4833  72C8 BFBC 8DFD 37E3 3103`. Check it with the `validate` tool from [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate/releases), and make sure it reports that fingerprint:
+
+```bash
+./validate-x86_64.AppImage Timeline_0.1.2_amd64.AppImage
+```
 
 Debian / Ubuntu / Pop!_OS:
 
 ```bash
-sudo apt install ./Timeline_0.1.1_amd64.deb
+sudo apt install ./Timeline_0.1.2_amd64.deb
 ```
 
 Fedora / RHEL:
 
 ```bash
-sudo dnf install ./Timeline-0.1.1-1.x86_64.rpm
+sudo dnf install ./Timeline-0.1.2-1.x86_64.rpm
 ```
 
 ### Blocked by a firewall or antivirus?
@@ -120,6 +131,7 @@ Host github.com
 * Clicking a link to a note that doesn't exist yet creates it
 * **Linked from** at the bottom shows every note that links to this one
 * The curve button in the toolbar shows every link at once
+* Images hosted on the web don't load inside notes, so a note someone shares with you can't report back when you open it. Links still open in your browser
 
 ### Full document view
 
@@ -184,6 +196,7 @@ Host github.com
 * **Settings → Share → Export** saves the current timeline as a `.json` file you can send to anyone
 * **Import timeline** adds a file like that as a new timeline. It never overwrites anything you already have
 * Links and card positions come along with it
+* Only `.json` timeline files are accepted, and every note in one is checked before anything is imported
 
 ### Syncing between devices
 
@@ -194,6 +207,8 @@ Host github.com
 3. Do the same on your other devices with the same link
 
 * It uses your computer's own `git` login (SSH key or credential manager), so the app never sees or stores a password
+* Links with a password or token in them (`https://user:token@github.com/...`) are refused. Use the plain link and let `git` handle the login
+* If a synced note is damaged or invalid, it's skipped and reported in the sync message instead of stopping sync
 * You need `git` installed:
   * Mac: `xcode-select --install`
   * Windows: [Git for Windows](https://git-scm.com/download/win)
@@ -261,15 +276,15 @@ npm run tauri dev
 
 * `npm run tauri build` makes the installers for whatever OS you're on
 * `npm run dev` runs just the UI in a browser with sample data, handy for design work
-* Pushing a `v*` tag builds Mac, Windows and Linux in GitHub Actions and drafts a release
+* Pushing a `v*` tag builds Mac, Windows and Linux in GitHub Actions and drafts a release. The Linux AppImage is built by `scripts/build-appimage.sh` and signed with the release key
 
 Tests:
 
 ```bash
 npm test                      # date math and stem routing
 npm run check                 # type check
-cd src-tauri && cargo test    # database, sync and sharing
-npm run test:ui               # UI tests (run `npm run dev` first)
+cd src-tauri && cargo test    # database, sync, sharing and input checks
+npm run test:ui               # UI tests, including note HTML sanitizing (run `npm run dev` first)
 ```
 
 ## Tech stack
@@ -279,7 +294,7 @@ npm run test:ui               # UI tests (run `npm run dev` first)
 * Sync is plain `git`, with a three-way merge per note so git never has to merge text
 * [Svelte 5](https://svelte.dev) and TypeScript front end, through SvelteKit
 * [CodeMirror 6](https://codemirror.net) for the editor, with [codemirror-vim](https://github.com/replit/codemirror-vim) for Vim mode
-* [marked](https://marked.js.org) for Markdown and [DOMPurify](https://github.com/cure53/DOMPurify) to keep shared notes safe
+* [marked](https://marked.js.org) for Markdown and [DOMPurify](https://github.com/cure53/DOMPurify) to keep shared notes safe, backed by a strict Content Security Policy
 * Inter and Fraunces fonts, and [Lucide](https://lucide.dev) icons
 * Built and released with GitHub Actions
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Timeline",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "com.timeline-app-dev",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self' data:; connect-src ipc: http://ipc.localhost; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'"
     }
   },
   "bundle": {

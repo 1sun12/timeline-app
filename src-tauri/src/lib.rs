@@ -35,6 +35,9 @@ fn save_timeline(s: State<AppState>, mut timeline: Timeline) -> Res<Timeline> {
     if timeline.name.trim().is_empty() {
         return Err("A timeline needs a name".into());
     }
+    if !timeline.id.is_empty() && !db::valid_id(&timeline.id) {
+        return Err("Invalid id".into());
+    }
     let now = db::now();
     if timeline.id.is_empty() {
         timeline.id = db::generate_id();
@@ -92,14 +95,26 @@ fn set_setting(s: State<AppState>, key: String, value: String) -> Res<()> {
     with(&s, |c| db::set_setting(c, &key, &value).map_err(e))
 }
 
+/// The file dialog filters to .json, but the command itself must not trust that.
+fn json_path(path: &str) -> Res<&std::path::Path> {
+    let p = std::path::Path::new(path);
+    if p.extension().is_some_and(|x| x.eq_ignore_ascii_case("json")) {
+        Ok(p)
+    } else {
+        Err("Timeline files must end in .json".into())
+    }
+}
+
 #[tauri::command]
 fn export_timeline(s: State<AppState>, id: String, path: String) -> Res<()> {
-    with(&s, |c| db::export_to_file(c, &id, std::path::Path::new(&path)))
+    let path = json_path(&path)?;
+    with(&s, |c| db::export_to_file(c, &id, path))
 }
 
 #[tauri::command]
 fn import_timeline(s: State<AppState>, path: String) -> Res<Timeline> {
-    with(&s, |c| db::import_from_file(c, std::path::Path::new(&path)))
+    let path = json_path(&path)?;
+    with(&s, |c| db::import_from_file(c, path))
 }
 
 #[tauri::command]
@@ -123,6 +138,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        // Keep the window on the app's own pages; outside links go to the system browser.
+        .plugin(
+            tauri::plugin::Builder::<_, ()>::new("nav-guard")
+                .on_navigation(|_, url| matches!(url.host_str(), Some("localhost" | "tauri.localhost")))
+                .build(),
+        )
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
@@ -149,4 +170,15 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn share_files_must_be_json() {
+        assert!(super::json_path("/tmp/Greeks.timeline.json").is_ok());
+        assert!(super::json_path("/tmp/x.JSON").is_ok());
+        assert!(super::json_path("/home/u/.bashrc").is_err());
+        assert!(super::json_path("/tmp/x.txt").is_err());
+    }
 }

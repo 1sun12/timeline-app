@@ -38,5 +38,10 @@ export function render(body: string, exists: (title: string) => boolean): string
       },
     ],
   });
-  return DOMPurify.sanitize(md.parse(body) as string, { ADD_ATTR: ["data-note"] });
+  return DOMPurify.sanitize(md.parse(body) as string, {
+    ADD_ATTR: ["data-note"],
+    // A shared note must not be able to draw a fake sign-in form or cover the window.
+    FORBID_TAGS: ["form", "input", "button", "textarea", "select", "style"],
+    FORBID_ATTR: ["style"],
+  });
 }

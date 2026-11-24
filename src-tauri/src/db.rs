@@ -61,6 +61,12 @@ pub fn generate_id() -> String {
     uuid::Uuid::new_v4().to_string()
 }
 
+/// Ids become file names in the sync vault, so they must never carry a path.
+pub fn valid_id(id: &str) -> bool {
+    id == MASTER_ID
+        || (!id.is_empty() && id.len() <= 64 && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'))
+}
+
 pub fn init(conn: &Connection) -> rusqlite::Result<()> {
     conn.execute_batch(
         "PRAGMA foreign_keys = ON;
@@ -102,6 +108,9 @@ pub fn init(conn: &Connection) -> rusqlite::Result<()> {
 /// Reject notes the timeline cannot place. This is the trust boundary for both
 /// the UI and imported files.
 pub fn validate(n: &Note) -> Result<(), String> {
+    if (!n.id.is_empty() && !valid_id(&n.id)) || !valid_id(&n.timeline_id) {
+        return Err("Invalid id".into());
+    }
     if n.title.trim().is_empty() {
         return Err("A note needs a title".into());
     }
@@ -336,10 +345,17 @@ pub fn import_timeline(conn: &mut Connection, json: &str) -> Result<Timeline, St
     if data.format != EXPORT_FORMAT {
         return Err("Not a timeline file".into());
     }
-    for n in &data.notes {
+    let at = now();
+    let timeline_id = generate_id();
+    // Fresh ids before validating: the file's own ids are discarded, so they needn't be valid.
+    let notes: Vec<Note> = data
+        .notes
+        .into_iter()
+        .map(|n| Note { id: generate_id(), timeline_id: timeline_id.clone(), modified_at: at.clone(), ..n })
+        .collect();
+    for n in &notes {
         validate(n).map_err(|e| format!("{}: {e}", n.title))?;
     }
-    let at = now();
     // Keep names distinct, e.g. importing your own "Master" export.
     let taken: Vec<String> = list_timelines(conn).map_err(|e| e.to_string())?.into_iter().map(|t| t.name).collect();
     let mut name = data.timeline.name.trim().to_string();
@@ -356,21 +372,15 @@ pub fn import_timeline(conn: &mut Connection, json: &str) -> Result<Timeline, St
         }
     }
     let timeline = Timeline {
-        id: generate_id(),
+        id: timeline_id,
         name,
         created_at: at.clone(),
-        modified_at: at.clone(),
+        modified_at: at,
     };
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     save_timeline(&tx, &timeline).map_err(|e| e.to_string())?;
-    for n in data.notes {
-        let note = Note {
-            id: generate_id(),
-            timeline_id: timeline.id.clone(),
-            modified_at: at.clone(),
-            ..n
-        };
-        save_note(&tx, &note).map_err(|e| e.to_string())?;
+    for note in &notes {
+        save_note(&tx, note).map_err(|e| e.to_string())?;
     }
     tx.commit().map_err(|e| e.to_string())?;
     Ok(timeline)
@@ -467,10 +477,22 @@ mod tests {
         let bad = r#"{"format":"timeline-app","version":1,"timeline":{"name":"x"},
                      "notes":[{"title":"Zero","year":0}]}"#;
         assert!(import_timeline(&mut c, bad).is_err());
-        let deep = |year| Note { title: "x".into(), year, ..Default::default() };
+        let deep = |year| Note { title: "x".into(), timeline_id: MASTER_ID.into(), year, ..Default::default() };
         assert!(validate(&deep(-13_787_000_000)).is_ok(), "the Big Bang is a valid date");
         assert!(validate(&deep(-2_000_000_000_000)).is_err());
         assert_eq!(list_timelines(&c).unwrap().len(), 1, "nothing half-imported");
+    }
+
+    #[test]
+    fn ids_can_never_carry_a_path() {
+        for bad in ["", "../x", "/abs", "a/b", "a\\b", "a.json", &"a".repeat(65)] {
+            assert!(!valid_id(bad), "{bad:?} must be rejected");
+        }
+        assert!(valid_id(MASTER_ID) && valid_id(&generate_id()));
+        let note = |id: &str, tl: &str| Note { id: id.into(), timeline_id: tl.into(), title: "x".into(), year: 1, ..Default::default() };
+        assert!(validate(&note("../../escape", MASTER_ID)).is_err());
+        assert!(validate(&note("", "/etc/x")).is_err());
+        assert!(validate(&note("", MASTER_ID)).is_ok(), "a new note has no id yet");
     }
 
     #[test]

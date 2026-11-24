@@ -8,3 +8,24 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+posts
+
+# Local planning notes and AI assistant config: never published
+.claude/
+*.plan.md
+
+# Private keys and certificates (the public docs/appimage-signing-key.asc is meant to be committed)
+*.secret.asc
+*-secret*.asc
+*.pem
+*.key
+*.p12
+*.pfx
+*.gpg
+
+# AppImage build output (scripts/build-appimage.sh)
+/AppDir
+/AppDir.tar
+/dist
+*.AppImage
+*.zsync
