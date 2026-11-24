@@ -71,6 +71,9 @@ EOF
 	rm -rf AppDir
 	DESKTOP="$TOOLS/$ID.desktop" ICON="$TOOLS/$ID.png" "$TOOLS/quick-sharun" src-tauri/target/release/timeline-app
 	install -Dm644 "packaging/$ID.appdata.xml" "AppDir/usr/share/metainfo/$ID.appdata.xml"
+	# quick-sharun only puts the desktop file at the AppDir root; appstreamcli
+	# validate-tree (run by appimagetool) looks for it next to the metainfo.
+	install -Dm644 "$TOOLS/$ID.desktop" "AppDir/usr/share/applications/$ID.desktop"
 	# tar keeps the symlinks and exec bits that an Actions artifact would drop.
 	tar -cf AppDir.tar AppDir
 	;;
